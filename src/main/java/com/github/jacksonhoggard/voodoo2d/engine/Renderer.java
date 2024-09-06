@@ -6,6 +6,7 @@ import com.github.jacksonhoggard.voodoo2d.engine.graph.Transformation;
 import org.joml.Matrix4f;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class Renderer {
 
@@ -37,6 +38,9 @@ public class Renderer {
         shaderProgram.createUniform("projectionMatrix");
         shaderProgram.createUniform("modelViewMatrix");
         shaderProgram.createUniform("texture_sampler");
+
+        //only one program is ever used we can bind in init()
+        shaderProgram.bind();
     }
 
     public void clear() {
@@ -45,32 +49,27 @@ public class Renderer {
 
     public void render(Window window, Camera camera, GameObject[] gameObjects) {
         clear();
-
         if (window.isResized()) {
             glViewport(0, 0, window.getWidth(), window.getHeight());
             window.setResized(false);
         }
 
-        shaderProgram.bind();
-
         // Update projection Matrix
         Matrix4f projectionMatrix = transformation.getProjectionMatrix(FOV, window.getWidth(), window.getHeight(), Z_NEAR, Z_FAR);
         shaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
-        // Update view Matrix
         Matrix4f viewMatrix = transformation.getViewMatrix(camera);
 
-        shaderProgram.setUniform("texture_sampler", 0);
         // Render each gameItem
         for (GameObject gameObject : gameObjects) {
             // Set model view matrix for this item
             Matrix4f modelViewMatrix = transformation.getModelViewMatrix(gameObject, viewMatrix);
             shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
             // Render the mesh for this game item
-            gameObject.getMesh().render();
+            glBindTexture(GL_TEXTURE_2D, gameObject.getMesh().getCurrentTextureId());
+            glBindVertexArray(gameObject.getMesh().getVaoId());
+            glDrawElements(GL_TRIANGLES, gameObject.getMesh().getVertexCount(), GL_UNSIGNED_INT, 0);
         }
-
-        shaderProgram.unbind();
     }
 
     public void cleanup() {
