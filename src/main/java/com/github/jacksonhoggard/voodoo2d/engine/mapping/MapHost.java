@@ -3,6 +3,7 @@ package com.github.jacksonhoggard.voodoo2d.engine.mapping;
 import java.io.File;
 import java.util.ArrayList;
 
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -16,7 +17,7 @@ public class MapHost {
     private String tmxTarget;
     private NodeList rawTileData;
     private NodeList rawImageData;
-    private ArrayList<TileSet> tileSets = new ArrayList<TileSet>();
+    private ArrayList<TileSet> tileSets = new ArrayList<>();
     private static Map map;
 
     public MapHost(String tmxTarget){

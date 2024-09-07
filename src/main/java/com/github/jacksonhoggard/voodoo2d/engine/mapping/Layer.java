@@ -9,12 +9,14 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Layer {
 
     private GameObject layer;
-    private int[][] layerCoords;
-    private int tileWidth, tileHeight;
+    private final int[][] layerCoords;
+    private final int tileWidth;
+    private final int tileHeight;
 
     public Layer(int[][] layerCoords, int x, int y, int tileWidth, int tileHeight, ArrayList<TileSet> tileSets) {
         this.layerCoords = layerCoords;
@@ -27,24 +29,32 @@ public class Layer {
 
         // Make the layer
         try {
-            for(int b = 0; b < y; b++) {
-                for(int a = 0; a < x; a++) {
-                    if(layerCoords[a][b] > 0) {
+            HashMap<String, BufferedImage> imageCache = new HashMap<>();
+            String basePath = String.format("src%smain%sresources%smaps%s", File.separator, File.separator, File.separator, File.separator);
+            for (int b = 0; b < y; b++) {
+                for (int a = 0; a < x; a++) {
+                    if (layerCoords[a][b] > 0) {
                         // Get the correct tileSet
                         TileSet currentTileSet = null;
                         for (TileSet tileSet : tileSets) {
                             if (layerCoords[a][b] >= tileSet.getFirstGID())
                                 currentTileSet = tileSet;
                         }
-                        BufferedImage tileSet = ImageIO.read(new File("src" + File.separator + "main"
-                                + File.separator + "resources" + File.separator +
-                                "maps" + File.separator + currentTileSet.getSource()));
+                        String path = basePath + currentTileSet.getSource();
+
+                        BufferedImage tileSet;
+                        if (imageCache.containsKey(path)) {
+                            tileSet = imageCache.get(path);
+                        } else {
+                            tileSet = ImageIO.read(new File(path));
+                            imageCache.put(path, tileSet);
+                        }
 
                         // Get subImage from tileset
                         BufferedImage subImage;
-                        for(int d = 0; d < currentTileSet.getGIDs()[0].length; d++) {
-                            for(int c = 0; c < currentTileSet.getGIDs().length; c++) {
-                                if(currentTileSet.getGIDs()[c][d] == layerCoords[a][b]) {
+                        for (int d = 0; d < currentTileSet.getGIDs()[0].length; d++) {
+                            for (int c = 0; c < currentTileSet.getGIDs().length; c++) {
+                                if (currentTileSet.getGIDs()[c][d] == layerCoords[a][b]) {
                                     subImage = tileSet.getSubimage(c * currentTileSet.getTileWidth(), d * currentTileSet.getTileHeight(), currentTileSet.getTileWidth(), currentTileSet.getTileHeight());
                                     layerTex = joinBufferedImage(layerTex, subImage, b, a);
                                 }

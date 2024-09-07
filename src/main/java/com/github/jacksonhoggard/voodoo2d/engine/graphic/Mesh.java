@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
@@ -172,24 +170,6 @@ public class Mesh {
         return vertexCount;
     }
 
-    public void render() {
-        // Activate firs texture bank
-        glActiveTexture(GL_TEXTURE0);
-        // Bind the texture
-        if(hasSpriteSheet)
-            glBindTexture(GL_TEXTURE_2D, spriteSheet.getTextures()[currentFrame].getId());
-        else
-            glBindTexture(GL_TEXTURE_2D, texture.getId());
-
-        // Draw the mesh
-        glBindVertexArray(getVaoId());
-
-        glDrawElements(GL_TRIANGLES, getVertexCount(), GL_UNSIGNED_INT, 0);
-
-        // Restore state
-        glBindVertexArray(0);
-    }
-
     public void cleanUp() {
         glDisableVertexAttribArray(0);
 
@@ -219,6 +199,10 @@ public class Mesh {
 
     public int getCurrentFrame() {
         return currentFrame;
+    }
+
+    public int getCurrentTextureId(){
+        return hasSpriteSheet ? spriteSheet.getTextures()[currentFrame].getId() : texture.getId();
     }
 
     public void setCurrentFrame(int currentFrame) {
